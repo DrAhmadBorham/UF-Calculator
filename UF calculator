@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UF Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #e8edf5;
+    --surface: #f4f6fb;
+    --card: #ffffff;
+    --border: #d0d8e8;
+    --accent: #2e6be6;
+    --accent-glow: rgba(46,107,230,0.10);
+    --text: #1a2340;
+    --muted: #6b7a99;
+    --success: #0e9e63;
+    --purple: #6c4fc2;
+    --purple-glow: rgba(108,79,194,0.10);
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+
+  .wrapper {
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .header .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-glow);
+    border: 1px solid rgba(46,107,230,0.25);
+    border-radius: 20px;
+    padding: 4px 14px;
+    margin-bottom: 12px;
+  }
+
+  .header h1 {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .header p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 5px;
+  }
+
+  .input-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.25rem 1.4rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 4px rgba(30,50,100,0.06);
+  }
+
+  .input-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-wrap input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 22px;
+    font-weight: 500;
+    padding: 12px 50px 12px 18px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+  .input-wrap input::-webkit-outer-spin-button,
+  .input-wrap input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .input-wrap input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+    background: #fff;
+  }
+
+  .input-wrap input::placeholder { color: #b0bac8; font-size: 15px; }
+
+  .unit-tag {
+    position: absolute;
+    right: 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  .time-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .time-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .time-field .input-wrap input {
+    font-size: 20px;
+  }
+
+  .btn-calculate {
+    width: 100%;
+    background: var(--accent);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(46,107,230,0.2);
+    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+    margin-top: 4px;
+    margin-bottom: 14px;
+  }
+  
+  .btn-calculate:active {
+    transform: scale(0.98);
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 1.2rem 0;
+  }
+
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .divider span {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .result-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1rem 1.2rem;
+    transition: border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(30,50,100,0.05);
+  }
+
+  .result-card.main {
+    grid-column: 1 / -1;
+    border-color: rgba(46,107,230,0.3);
+    background: linear-gradient(135deg, #eef3fd 0%, #f7f9ff 100%);
+  }
+
+  .result-card.main::before {
+    content: '';
+    position: absolute;
+    top: -10px; right: -10px;
+    width: 80px; height: 80px;
+    background: radial-gradient(circle, rgba(46,107,230,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .result-card.actual {
+    grid-column: 1 / -1;
+    border-color: rgba(108,79,194,0.3);
+    background: linear-gradient(135deg, #f3f0fc 0%, #f9f8ff 100%);
+  }
+
+  .result-card.actual::before {
+    content: '';
+    position: absolute;
+    top: -10px; right: -10px;
+    width: 80px; height: 80px;
+    background: radial-gradient(circle, rgba(108,79,194,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .result-card.active {
+    border-color: rgba(14,158,99,0.3);
+  }
+
+  .result-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .result-card.main .result-label { color: var(--accent); }
+  .result-card.actual .result-label { color: var(--purple); }
+
+  .result-value {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .result-card:not(.main):not(.actual) .result-value {
+    font-size: 22px;
+    color: var(--success);
+  }
+
+  .result-card.main .result-value {
+    font-size: 30px;
+    color: var(--accent);
+  }
+
+  .result-card.actual .result-value {
+    font-size: 30px;
+    color: var(--purple);
+  }
+
+  .result-unit {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--muted);
+    margin-left: 3px;
+  }
+
+  .empty { color: #c8d0de !important; }
+
+  .footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 11px;
+    color: #a0aabf;
+  }
+
+  @keyframes pop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+  }
+  .popped { animation: pop 0.18s ease-out; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <div class="badge">Dialysis</div>
+    <h1>UF Calculator</h1>
+    <p>Ultrafiltration Rate Calculator</p>
+  </div>
+
+  <!-- DW Input -->
+  <div class="input-card">
+    <div class="input-label">Dry Weight — DW</div>
+    <div class="input-wrap">
+      <input type="number" id="dw" placeholder="Enter DW" min="0" step="0.1" inputmode="decimal">
+      <span class="unit-tag">kg</span>
+    </div>
+  </div>
+
+  <!-- Actual Time Input -->
+  <div class="input-card">
+    <div class="input-label" style="margin-bottom:12px;">Actual Session Time</div>
+    <div class="time-row">
+      <div class="time-field">
+        <label>Hours</label>
+        <div class="input-wrap">
+          <input type="number" id="t-hours" placeholder="0" min="0" max="12" step="1" inputmode="numeric">
+          <span class="unit-tag">hr</span>
+        </div>
+      </div>
+      <div class="time-field">
+        <label>Minutes</label>
+        <div class="input-wrap">
+          <input type="number" id="t-mins" placeholder="0" min="0" max="59" step="1" inputmode="numeric">
+          <span class="unit-tag">min</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- زر الحساب المخصص للآيفون -->
+  <button class="btn-calculate" onclick="calc()">Calculate</button>
+
+  <!-- Standard Results -->
+  <div class="divider"><span>Standard Targets</span></div>
+
+  <div class="results-grid">
+    <div class="result-card main" id="card1">
+      <div class="result-label">Max UF per Hour</div>
+      <div class="result-value empty" id="v1">—<span class="result-unit">mL</span></div>
+    </div>
+    <div class="result-card" id="card2">
+      <div class="result-label">4 Hours</div>
+      <div class="result-value empty" id="v2">—<span class="result-unit">mL</span></div>
+    </div>
+    <div class="result-card" id="card3">
+      <div class="result-label">3.5 Hours</div>
+      <div class="result-value empty" id="v3">—<span class="result-unit">mL</span></div>
+    </div>
+    <div class="result-card" style="grid-column: 1 / -1;" id="card4">
+      <div class="result-label">3 Hours</div>
+      <div class="result-value empty" id="v4">—<span class="result-unit">mL</span></div>
+    </div>
+  </div>
+
+  <!-- Actual Time Result -->
+  <div class="divider"><span>Actual Time Result</span></div>
+
+  <div class="results-grid">
+    <div class="result-card actual" id="card5">
+      <div class="result-label" id="actual-label">Enter time above</div>
+      <div class="result-value empty" id="v5">—<span class="result-unit">mL</span></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    UF = DW × 13 &nbsp;|&nbsp; Max UF rounded to nearest 50 · Others to nearest 100
+    <div style="margin-top: 6px; user-select: none; pointer-events: none; color: #8899aa; font-weight: 500;">
+      A Program By Dr Ahmed Mostafa Taha
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function roundDown50(n)  { return Math.floor(n / 50)  * 50; }
+  function roundDown100(n) { return Math.floor(n / 100) * 100; }
+  function fmt(n) { return n.toLocaleString('en-US'); }
+
+  function popCard(id) {
+    const el = document.getElementById(id);
+    el.classList.remove('popped');
+    void el.offsetWidth;
+    el.classList.add('popped');
+  }
+
+  function setVal(id, cardId, val, isEmpty) {
+    const el = document.getElementById(id);
+    if (isEmpty) {
+      el.innerHTML = '—<span class="result-unit">mL</span>';
+      el.classList.add('empty');
+    } else {
+      el.innerHTML = fmt(val) + '<span class="result-unit"> mL</span>';
+      el.classList.remove('empty');
+      popCard(cardId);
+    }
+  }
+
+  function calc() {
+    const dw   = parseFloat(document.getElementById('dw').value);
+    const hrs  = parseFloat(document.getElementById('t-hours').value) || 0;
+    const mins = parseFloat(document.getElementById('t-mins').value)  || 0;
+
+    const dwValid   = !isNaN(dw) && dw > 0;
+    const timeValid = hrs > 0 || mins > 0;
+
+    if (!dwValid) {
+      ['v1','v2','v3','v4'].forEach((id, i) => setVal(id, 'card'+(i+1), 0, true));
+      setVal('v5', 'card5', 0, true);
+      ['card2','card3','card4','card5'].forEach(id => document.getElementById(id).classList.remove('active'));
+      document.getElementById('actual-label').textContent = 'Enter time above';
+      return;
+    }
+
+    const maxUF = roundDown50(dw * 13);
+    setVal('v1', 'card1', maxUF,                    false);
+    setVal('v2', 'card2', roundDown100(maxUF * 4),   false);
+    setVal('v3', 'card3', roundDown100(maxUF * 3.5), false);
+    setVal('v4', 'card4', roundDown100(maxUF * 3),   false);
+    ['card2','card3','card4'].forEach(id => document.getElementById(id).classList.add('active'));
+
+    if (timeValid) {
+      const totalHours = hrs + mins / 60;
+      const actualVal  = roundDown100(maxUF * totalHours);
+      const hPart   = hrs  > 0 ? `${hrs}h ` : '';
+      const mPart   = mins > 0 ? `${mins}min` : '';
+      document.getElementById('actual-label').textContent = (hPart + mPart).trim();
+      setVal('v5', 'card5', actualVal, false);
+      document.getElementById('card5').classList.add('active');
+    } else {
+      document.getElementById('actual-label').textContent = 'Enter time above';
+      setVal('v5', 'card5', 0, true);
+      document.getElementById('card5').classList.remove('active');
+    }
+  }
+
+  ['dw','t-hours','t-mins'].forEach(id => {
+    document.getElementById(id).addEventListener('input', calc);
+    document.getElementById(id).addEventListener('change', calc);
+  });
+</script>
+</body>
+</html>
